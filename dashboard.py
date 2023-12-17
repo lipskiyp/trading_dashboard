@@ -15,45 +15,43 @@ class TradingDashboard(BaseDashboard):
     """
     DAYS_YEAR = 252
 
-    @classmethod
-    def get_avg_r(cls,
-        ts: DataFrame,
+    def __init__(self, ts: DataFrame):
+        self.ts = ts
+
+    def avg_r(
+        self,
         offset: int = 1,
         annualise: bool = True,
     ) -> List[float]:
         """
         Returns average returns.
         """
-        avg_rs = cls._get_ln_r(ts, offset).mean().values
+        avg_rs = self._ln_r(offset).mean().values
 
         if annualise:
-            avg_rs *= cls.DAYS_YEAR/offset
+            avg_rs *= self.DAYS_YEAR/offset
         return avg_rs
 
-    @classmethod
-    def get_cagr(
-        cls,
-        ts: DataFrame,
+    def cagr(
+        self,
         offset: int = 1,
     ) -> List[float]:
         """
         Returns compounded annual growth rate (CAGR).
         """
-        _cumprod = (1 + cls._get_ln_r(ts, offset)).cumprod()
-        _power = (len(_cumprod.index)) / cls.DAYS_YEAR
+        _cumprod = (1 + self._ln_r(offset)).cumprod()
+        _power = (len(_cumprod.index)) / self.DAYS_YEAR
         return np.power(_cumprod.values[-1], _power) - 1
 
-    @classmethod
-    def get_sigma_r(
-        cls,
-        ts: DataFrame,
+    def sigma_r(
+        self,
         offset: int = 1,
         annualise: bool = True,
     ) -> List[float]:
         """
         Returns standard deviation of returns.
         """
-        _rs = cls._get_ln_r(ts, offset) ** 2
+        _rs = self._ln_r(offset) ** 2
         sigma = np.sqrt(
             _rs.sum() / (len(_rs) - 1)
         ).values
@@ -62,10 +60,8 @@ class TradingDashboard(BaseDashboard):
             sigma *= np.sqrt(252 / offset)
         return sigma
 
-    @classmethod
-    def get_downside_sigma_r(
-        cls,
-        ts: DataFrame,
+    def downside_sigma_r(
+        self,
         threshold: float, # downside retunr threshold
         offset: int = 1,
         annualise: bool = True,
@@ -73,7 +69,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns downside (loss) standard deviation of returns.
         """
-        _rs = cls._get_ln_r(ts, offset).map(
+        _rs = self._ln_r(offset).map(
             lambda x: np.min([x - threshold, 0]) ** 2
         )
         downside_sigma = np.sqrt(_rs.sum()/len(_rs)).values
@@ -82,10 +78,8 @@ class TradingDashboard(BaseDashboard):
             downside_sigma *= np.sqrt(252 / offset)
         return downside_sigma
 
-    @classmethod
-    def get_upside_sigma_r(
-        cls,
-        ts: DataFrame,
+    def upside_sigma_r(
+        self,
         threshold: float, # upside retunr threshold
         offset: int = 1,
         annualise: bool = True,
@@ -93,7 +87,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns downside standard deviation of returns.
         """
-        _rs = cls._get_ln_r(ts, offset).map(
+        _rs = self._ln_r(offset).map(
             lambda x: np.max([x - threshold, 0]) ** 2
         )
         upside_sigma = np.sqrt(_rs.sum()/len(_rs)).values
