@@ -9,15 +9,13 @@ class BaseDashboard:
     """
     Base class
     """
-    @classmethod
-    def _get_ln_r(
-        cls,
-        ts: DataFrame,
+    def _ln_r(
+        self,
         offset: int
     ) -> DataFrame:
         """
         Return log returns.
         """
         return np.log(
-            ts.shift(offset) / ts
+            self.ts.shift(offset) / self.ts
         )
