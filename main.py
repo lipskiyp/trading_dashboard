@@ -1,67 +1,19 @@
 """
-Trading dashborad.
+Execution file.
 """
 
-import numpy as np
-from pandas.core.frame import DataFrame
+
+from dashboard import TradingDashboard
 from timeseries import TimeSeriesFactory
 
 
-class TradingDashboard:
-    """
-    Class to caculate metrics for financial timeseries.
-    """
-    DAYS_YEAR = 252
+if __name__ == "__main__":
+    ts = TimeSeriesFactory.get_random_daily_ts(calendar="NYSE")
 
-    @classmethod
-    def get_avg_daily_r(
-        cls,
-        ts: DataFrame,
-        annualise: bool = True,
-    ):
-        """
-        Returns average daily return.
-        """
-        return cls.get_avg_r(
-            ts, offset=1, annualise=annualise
-        )
-
-    @classmethod
-    def get_avg_weekly_r(
-        cls,
-        ts: DataFrame,
-        annualise: bool = True,
-    ):
-        """
-        Returns average weekly return.
-        """
-        return cls.get_avg_r(
-            ts, offset=5, annualise=annualise
-        )
-
-    @classmethod
-    def get_avg_r(
-        cls,
-        ts: DataFrame,
-        offset: int = 1,
-        annualise: bool = True,
-    ) -> float:
-        """
-        Returns average returns.
-        """
-        avg_rs = np.log(
-            ts.shift(offset) / ts
-        ).mean().values
-
-        if annualise:
-            avg_rs *= cls.DAYS_YEAR/offset
-        return avg_rs
-
-
-
-
-
-ts = TimeSeriesFactory.get_random_daily_ts(calendar="NYSE")
-r = TradingDashboard.get_avg_weekly_r(ts)
-print(r)
-
+    print({
+        "Avg. Annual Return": TradingDashboard.get_avg_r(ts)[0],
+        "CAGR": TradingDashboard.get_cagr(ts)[0],
+        "Vol": TradingDashboard.get_sigma_r(ts)[0],
+        "DownsideVol": TradingDashboard.get_downside_sigma_r(ts, threshold=0.01)[0],
+        "UpsideVol": TradingDashboard.get_upside_sigma_r(ts, threshold=0.01)[0],
+    })
