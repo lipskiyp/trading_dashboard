@@ -1,23 +1,16 @@
 """
-Trading dashborad.
+Core trading dashborad.
 """
 
+from abc import ABC
 import numpy as np
 from pandas.core.frame import DataFrame
 
-from base import BaseDashboard
 
-
-class TradingDashboard(BaseDashboard):
+class CoreDashboard(ABC):
     """
-    Class to caculate metrics for financial timeseries.
+    Abstract base class for trading dashboard with core metrics.
     """
-    TRADING_DAYS_YEAR = 252
-
-
-    def __init__(self, ts: DataFrame):
-        self.ts = ts
-
 
     def avg_ds(
         self,
@@ -39,7 +32,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns average returns.
         """
-        avg_rs = self._ln_r(offset).mean()
+        avg_rs = self.ln_rs(offset).mean()
 
         if annualise:
             avg_rs *= self.TRADING_DAYS_YEAR/offset
@@ -53,7 +46,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns compounded annual growth rate (CAGR).
         """
-        _cumprod = (1 + self._ln_r(offset)).cumprod()
+        _cumprod = (1 + self.ln_rs(offset)).cumprod()
         _power = (len(_cumprod.index)) / self.TRADING_DAYS_YEAR
         return _cumprod.iloc[-1] ** _power - 1
 
@@ -66,7 +59,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns standard deviation of returns.
         """
-        rs = self._ln_r(offset)
+        rs = self.ln_rs(offset)
         N = len(rs)
 
         sigma = np.sqrt(
@@ -87,7 +80,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns downside (loss) standard deviation of returns.
         """
-        rs = self._ln_r(offset).map(
+        rs = self.ln_rs(offset).map(
             lambda x: np.min([x - threshold, 0]) ** 2
         )
         N = len(rs)
@@ -108,7 +101,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns downside standard deviation of returns.
         """
-        rs = self._ln_r(offset).map(
+        rs = self.ln_rs(offset).map(
             lambda x: np.max([x - threshold, 0]) ** 2
         )
         N = len(rs)
@@ -129,7 +122,7 @@ class TradingDashboard(BaseDashboard):
         """
         Returns covariance between time-series and benchmark.
         """
-        rs = self._ln_r(offset)
+        rs = self.ln_rs(offset)
         N = len(rs)
 
         covar = (
@@ -155,41 +148,3 @@ class TradingDashboard(BaseDashboard):
         sigma = self.sigma(offset)
 
         return covar / (sigma * sigma[[benchmark]].values)
-
-
-    def skew(
-        self,
-        offset: int = 1,
-    ) -> DataFrame:
-        """
-        Returns skew of returns.
-        """
-        rs = self._ln_r(offset)
-        sigma = self.sigma(offset, annualise=False)
-        N = len(rs)
-
-        return (
-            (rs - rs.mean()) ** 3
-        ).sum() / sigma * N / (N - 1) / (N - 2)
-
-
-    def kurtosis(
-        self,
-        offset: int = 1,
-        excess: bool = True,
-    ) -> DataFrame:
-        """
-        Returns kurtosis of returns.
-        """
-        rs = self._ln_r(offset)
-        sigma = self.sigma(offset, annualise=False)
-        N = len(rs)
-
-        kurt = (
-            (rs - rs.mean()) ** 4
-        ).sum() / sigma * N * (N - 1) / (N - 2) / (N - 3)
-
-        if not excess:
-            kurt -= 3 * (N - 1) ** 2 / (N - 2) / (N - 3)
-        return kurt
-
