@@ -26,11 +26,13 @@ if __name__ == "__main__":
             dashboard.avg_ds(),
             dashboard.avg_r(),
             dashboard.cagr(),
-            dashboard.sigma_r(),
-            dashboard.downside_sigma_r(threshold=0.01),
-            dashboard.upside_sigma_r(threshold=0.01),
-            dashboard.covar_r(benchmark="benchmark"),
-            dashboard.corr_r(benchmark="benchmark"),
+            dashboard.sigma(),
+            dashboard.downside_sigma(threshold=0.01),
+            dashboard.upside_sigma(threshold=0.01),
+            dashboard.covar(benchmark="benchmark"),
+            dashboard.corr(benchmark="benchmark"),
+            dashboard.skew(),
+            dashboard.kurtosis(),
         ],
         axis=1
     )
@@ -43,7 +45,9 @@ if __name__ == "__main__":
         "DownsideVol",
         "UpsideVol",
         "CoVar",
-        "Corr"
+        "Corr",
+        "Skew",
+        "Kurt"
     ]
 
     print(res)

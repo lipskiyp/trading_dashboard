@@ -4,7 +4,6 @@ Trading dashborad.
 
 import numpy as np
 from pandas.core.frame import DataFrame
-from typing import List
 
 from base import BaseDashboard
 
@@ -13,8 +12,7 @@ class TradingDashboard(BaseDashboard):
     """
     Class to caculate metrics for financial timeseries.
     """
-
-    DAYS_YEAR = 252
+    TRADING_DAYS_YEAR = 252
 
 
     def __init__(self, ts: DataFrame):
@@ -24,9 +22,9 @@ class TradingDashboard(BaseDashboard):
     def avg_ds(
         self,
         offset: int = 1,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
-        Return average price change.
+        Returns average price change.
         """
         return (
             self.ts.shift(offset) - self.ts
@@ -37,120 +35,161 @@ class TradingDashboard(BaseDashboard):
         self,
         offset: int = 1,
         annualise: bool = True,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
         Returns average returns.
         """
         avg_rs = self._ln_r(offset).mean()
 
         if annualise:
-            avg_rs *= self.DAYS_YEAR/offset
+            avg_rs *= self.TRADING_DAYS_YEAR/offset
         return avg_rs
 
 
     def cagr(
         self,
         offset: int = 1,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
         Returns compounded annual growth rate (CAGR).
         """
         _cumprod = (1 + self._ln_r(offset)).cumprod()
-        _power = (len(_cumprod.index)) / self.DAYS_YEAR
+        _power = (len(_cumprod.index)) / self.TRADING_DAYS_YEAR
         return _cumprod.iloc[-1] ** _power - 1
 
 
-    def sigma_r(
+    def sigma(
         self,
         offset: int = 1,
         annualise: bool = True,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
         Returns standard deviation of returns.
         """
-        _rs = self._ln_r(offset)
+        rs = self._ln_r(offset)
+        N = len(rs)
+
         sigma = np.sqrt(
-            ( (_rs - _rs.mean()) ** 2).sum() / (len(_rs) - 1)
+            ( (rs - rs.mean()) ** 2).sum() / (N - 1)
         )
 
         if annualise:
-            sigma *= np.sqrt(252 / offset)
+            sigma *= np.sqrt(self.TRADING_DAYS_YEAR / offset)
         return sigma
 
 
-    def downside_sigma_r(
+    def downside_sigma(
         self,
-        threshold: float, # downside retunr threshold
+        threshold: float, # downside return threshold
         offset: int = 1,
         annualise: bool = True,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
         Returns downside (loss) standard deviation of returns.
         """
-        _rs = self._ln_r(offset).map(
+        rs = self._ln_r(offset).map(
             lambda x: np.min([x - threshold, 0]) ** 2
         )
-        downside_sigma = np.sqrt( _rs.sum() / len(_rs) )
+        N = len(rs)
+
+        downside_sigma = np.sqrt( rs.sum() / N )
 
         if annualise:
-            downside_sigma *= np.sqrt(252 / offset)
+            downside_sigma *= np.sqrt(self.TRADING_DAYS_YEAR / offset)
         return downside_sigma
 
 
-    def upside_sigma_r(
+    def upside_sigma(
         self,
-        threshold: float, # upside retunr threshold
+        threshold: float, # upside return threshold
         offset: int = 1,
         annualise: bool = True,
-    ) -> List[float]:
+    ) -> DataFrame:
         """
         Returns downside standard deviation of returns.
         """
-        _rs = self._ln_r(offset).map(
+        rs = self._ln_r(offset).map(
             lambda x: np.max([x - threshold, 0]) ** 2
         )
-        upside_sigma = np.sqrt(_rs.sum()/len(_rs))
+        N = len(rs)
+
+        upside_sigma = np.sqrt(rs.sum() / N)
 
         if annualise:
-            upside_sigma *= np.sqrt(252 / offset)
+            upside_sigma *= np.sqrt(self.TRADING_DAYS_YEAR / offset)
         return upside_sigma
 
 
-    def covar_r(
+    def covar(
         self,
         benchmark: str,
         offset: int = 1,
         annualise: bool = True,
-    ):
+    ) -> DataFrame:
         """
         Returns covariance between time-series and benchmark.
         """
-        _rs = self._ln_r(offset)
+        rs = self._ln_r(offset)
+        N = len(rs)
 
         covar = (
             (
-                (_rs - _rs.mean()) * (_rs[[benchmark]] - _rs[[benchmark]].mean()).values
-            ).sum() / (len(_rs) - 1)
+                (rs - rs.mean()) * (rs[[benchmark]] - rs[[benchmark]].mean()).values
+            ).sum() / (N - 1)
         )
 
         if annualise:
-            covar *= 252 / offset
+            covar *= self.TRADING_DAYS_YEAR / offset
         return covar
 
 
-    def corr_r(
+    def corr(
         self,
         benchmark: str,
         offset: int = 1,
-        annualise: bool = True,
-    ):
+    ) -> DataFrame:
         """
         Returns correlation between time-series and benchmark.
         """
-        covar = self.covar_r(benchmark, offset)
-        sigma = self.sigma_r(offset)
+        covar = self.covar(benchmark, offset)
+        sigma = self.sigma(offset)
 
         return covar / (sigma * sigma[[benchmark]].values)
 
 
+    def skew(
+        self,
+        offset: int = 1,
+    ) -> DataFrame:
+        """
+        Returns skew of returns.
+        """
+        rs = self._ln_r(offset)
+        sigma = self.sigma(offset, annualise=False)
+        N = len(rs)
+
+        return (
+            (rs - rs.mean()) ** 3
+        ).sum() / sigma * N / (N - 1) / (N - 2)
+
+
+    def kurtosis(
+        self,
+        offset: int = 1,
+        excess: bool = True,
+    ) -> DataFrame:
+        """
+        Returns kurtosis of returns.
+        """
+        rs = self._ln_r(offset)
+        sigma = self.sigma(offset, annualise=False)
+        N = len(rs)
+
+        kurt = (
+            (rs - rs.mean()) ** 4
+        ).sum() / sigma * N * (N - 1) / (N - 2) / (N - 3)
+
+        if not excess:
+            kurt -= 3 * (N - 1) ** 2 / (N - 2) / (N - 3)
+        return kurt
 
