@@ -2,14 +2,10 @@
 
 Pandas/NumPy practice project that calculates metrics for financial time-series.
 
-### /base.py
-
-Contains base trading dashborad class.
-
-### /dashborad.py
+### /dashborad
 
 Contains trading dashboard class..
 
-### /timeseries.py
+### /timeseries
 
 Contains random time-series factory.

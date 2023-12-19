@@ -26,13 +26,21 @@ if __name__ == "__main__":
             dashboard.avg_ds(),
             dashboard.avg_r(),
             dashboard.cagr(),
+            dashboard.var(),
             dashboard.sigma(),
             dashboard.downside_sigma(threshold=0.01),
             dashboard.upside_sigma(threshold=0.01),
             dashboard.covar(benchmark="benchmark"),
             dashboard.corr(benchmark="benchmark"),
             dashboard.skew(),
+            dashboard.coskew(benchmark="benchmark"),
             dashboard.kurtosis(),
+            dashboard.cokurtosis(benchmark="benchmark"),
+            dashboard.drawdown(),
+            dashboard.drawdown_dur(),
+            dashboard.maxdrawdown(),
+            dashboard.maxdrawdown_dur(),
+            dashboard.pain_index(),
         ],
         axis=1
     )
@@ -41,13 +49,21 @@ if __name__ == "__main__":
         "Avg. Price Change",
         "Avg. Annual Return",
         "CAGR",
+        "Var",
         "Vol",
         "DownsideVol",
         "UpsideVol",
         "CoVar",
         "Corr",
         "Skew",
-        "Kurt"
+        "CoSkew",
+        "Kurt",
+        "CoKurt",
+        "DD",
+        "DDur",
+        "MaxDD",
+        "MaxDDur",
+        "PainIdx"
     ]
 
-    print(res)
+    print(res.T)
