@@ -46,9 +46,29 @@ class CoreDashboard(ABC):
         """
         Returns compounded annual growth rate (CAGR).
         """
-        _cumprod = (1 + self.ln_rs(offset)).cumprod()
-        _power = (len(_cumprod.index)) / self.TRADING_DAYS_YEAR
-        return _cumprod.iloc[-1] ** _power - 1
+        cumprod = (1 + self.ln_rs(offset)).cumprod()
+        power = (len(cumprod.index)) / self.TRADING_DAYS_YEAR
+        return cumprod.iloc[-1] ** power - 1
+
+
+    def var(
+        self,
+        offset: int = 1,
+        annualise: bool = True,
+    ) -> DataFrame:
+        """
+        Returns var of returns.
+        """
+        rs = self.ln_rs(offset)
+        N = len(rs)
+
+        sigma = (
+            (rs - rs.mean()) ** 2
+        ).sum() / (N - 1)
+
+        if annualise:
+            sigma *= self.TRADING_DAYS_YEAR / offset
+        return sigma
 
 
     def sigma(
@@ -57,18 +77,11 @@ class CoreDashboard(ABC):
         annualise: bool = True,
     ) -> DataFrame:
         """
-        Returns standard deviation of returns.
+        Returns standard deviation of retunrs.
         """
-        rs = self.ln_rs(offset)
-        N = len(rs)
-
-        sigma = np.sqrt(
-            ( (rs - rs.mean()) ** 2).sum() / (N - 1)
+        return np.sqrt(
+            self.var(offset, annualise)
         )
-
-        if annualise:
-            sigma *= np.sqrt(self.TRADING_DAYS_YEAR / offset)
-        return sigma
 
 
     def downside_sigma(

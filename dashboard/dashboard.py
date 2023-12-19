@@ -13,7 +13,7 @@ class TradingDashboard(
     BaseDashboard, CoreDashboard, TailDashboard
 ):
     """
-    Tradinf dashboard.
+    Trading dashboard.
     """
 
     TRADING_DAYS_YEAR = 252
