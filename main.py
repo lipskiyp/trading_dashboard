@@ -21,49 +21,28 @@ if __name__ == "__main__":
     # Initialise dashboard
     dashboard = TradingDashboard(ts=ts)
 
-    res = pd.concat(
-        [
-            dashboard.avg_ds(),
-            dashboard.avg_r(),
-            dashboard.cagr(),
-            dashboard.var(),
-            dashboard.sigma(),
-            dashboard.downside_sigma(threshold=0.01),
-            dashboard.upside_sigma(threshold=0.01),
-            dashboard.covar(benchmark="benchmark"),
-            dashboard.corr(benchmark="benchmark"),
-            dashboard.skew(),
-            dashboard.coskew(benchmark="benchmark"),
-            dashboard.kurtosis(),
-            dashboard.cokurtosis(benchmark="benchmark"),
-            dashboard.drawdown(),
-            dashboard.drawdown_dur(),
-            dashboard.maxdrawdown(),
-            dashboard.maxdrawdown_dur(),
-            dashboard.pain_index(),
-        ],
-        axis=1
-    )
+    metrics = {
+        "Avg. Price Change": dashboard.avg_ds(),
+        "Avg. Annual Return": dashboard.avg_r(),
+        "CAGR": dashboard.cagr(),
+        "Var": dashboard.var(),
+        "Vol": dashboard.sigma(),
+        "DownsideVol": dashboard.downside_sigma(threshold=0.01),
+        "UpsideVol": dashboard.upside_sigma(threshold=0.01),
+        "CoVar": dashboard.covar(benchmark="benchmark"),
+        "Corr": dashboard.corr(benchmark="benchmark"),
+        "Skew": dashboard.skew(),
+        "CoSkew": dashboard.coskew(benchmark="benchmark"),
+        "Kurt": dashboard.kurtosis(),
+        "CoKurt": dashboard.cokurtosis(benchmark="benchmark"),
+        "DD": dashboard.drawdown(),
+        "DDur": dashboard.drawdown_dur(),
+        "MaxDD": dashboard.maxdrawdown(),
+        "MaxDDur": dashboard.maxdrawdown_dur(),
+        "PainIdx": dashboard.pain_index(),
+    }
 
-    res.columns = [
-        "Avg. Price Change",
-        "Avg. Annual Return",
-        "CAGR",
-        "Var",
-        "Vol",
-        "DownsideVol",
-        "UpsideVol",
-        "CoVar",
-        "Corr",
-        "Skew",
-        "CoSkew",
-        "Kurt",
-        "CoKurt",
-        "DD",
-        "DDur",
-        "MaxDD",
-        "MaxDDur",
-        "PainIdx"
-    ]
+    res = pd.concat(metrics.values(), axis=1)
+    res.columns = metrics.keys()
 
     print(res.T)
