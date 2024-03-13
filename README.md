@@ -1,6 +1,6 @@
 # Pandas Trading Dashbaord
 
-Pandas practice project that calculates metrics for financial time-series.
+Pandas practice project to calculates metrics for financial time-series.
 
 ## Example Output
 
@@ -26,9 +26,35 @@ MaxDDur             355 days 00:00:00  101 days 00:00:00  59 days 00:00:00
 PainIdx                       0.10961           0.018286          0.020202
 ```
 
-### /dashborad
+## Requirements 
 
-Contains trading dashboard class..
+Library requirements can be installed using your preferred package manager, e.g. pip:
+
+```bash
+pip3 install -r requirements.txt
+```
+
+## Launch
+
+To display the example trading dashboard:
+
+```python
+python3 main.py
+```
+
+## Folders Overview
+
+### /dashborad/dashboard.py
+
+Contains trading dashboard client example implementation which acts as an interface for metrics services.
+
+### /dashborad/metrics 
+
+Contains metrics clients used to calculate metrics for financial time-series.
+
+### /dashborad/timeseries 
+
+Contains time-series object for all interactions with the financial time-series.
 
 ### /timeseries
 
