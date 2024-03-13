@@ -13,15 +13,19 @@ class TailMetrics:
     Tail-risk metrics service.
     """
 
-    @staticmethod
+    def __init__(self, ts: TimeSeries):
+        self.ts = ts
+        self.core_metrics = CoreMetrics(ts)
+
+
     def skew(
-        ts: TimeSeries, offset: int = 1,
+        self, offset: int = 1,
     ) -> DataFrame:
         """
         Returns skew of returns.
         """
-        rs = ts.ln_rs(offset)
-        sigma = CoreMetrics.sigma(ts, offset, annualise=False)
+        rs = self.ts.ln_rs(offset)
+        sigma = self.core_metrics.sigma(offset, annualise=False)
         N = len(rs)
 
         return (
@@ -29,15 +33,14 @@ class TailMetrics:
         ).sum() / sigma * N / (N - 1) / (N - 2)
 
 
-    @staticmethod
     def coskew(
-        ts: TimeSeries, benchmark: str, offset: int = 1
+        self, benchmark: str, offset: int = 1
     ):
         """
         Returns coskew of returns with benchmark.
         """
-        rs = ts.ln_rs(offset)
-        sigma = CoreMetrics.sigma(ts, offset, annualise=False)
+        rs = self.ts.ln_rs(offset)
+        sigma = self.core_metrics.sigma(offset, annualise=False)
         N = len(rs)
 
         return (
@@ -45,15 +48,14 @@ class TailMetrics:
         ).sum() / sigma * N / (N - 1) / (N - 2)
 
 
-    @staticmethod
     def kurtosis(
-        ts: TimeSeries, offset: int = 1, excess: bool = True,
+        self, offset: int = 1, excess: bool = True,
     ) -> DataFrame:
         """
         Returns kurtosis of returns.
         """
-        rs = ts.ln_rs(offset)
-        sigma = CoreMetrics.sigma(ts, offset, annualise=False)
+        rs = self.ts.ln_rs(offset)
+        sigma = self.core_metrics.sigma(offset, annualise=False)
         N = len(rs)
 
         kurt = (
@@ -65,15 +67,14 @@ class TailMetrics:
         return kurt
 
 
-    @staticmethod
     def cokurtosis(
-        ts: TimeSeries, benchmark: str, offset: int = 1, excess: bool = True,
+        self, benchmark: str, offset: int = 1, excess: bool = True,
     ) -> DataFrame:
         """
         Returns cokurtosis of returns with benchmark.
         """
-        rs = ts.ln_rs(offset)
-        sigma = CoreMetrics.sigma(ts, offset, annualise=False)
+        rs = self.ts.ln_rs(offset)
+        sigma = self.core_metrics.sigma(offset, annualise=False)
         N = len(rs)
 
         cokurt = (
@@ -85,41 +86,37 @@ class TailMetrics:
         return cokurt
 
 
-    @staticmethod
     def drawdown(
-        ts: TimeSeries,
+        self,
     ) -> DataFrame:
         """
         Returns current loss from last high water mark.
         """
-        return ts.timeseries.iloc[-1] / ts.timeseries.max() - 1
+        return self.ts.timeseries.iloc[-1] / self.ts.timeseries.max() - 1
 
 
-    @staticmethod
     def drawdown_dur(
-        ts: TimeSeries,
+        self,
     ) -> DataFrame:
         """
         Returns current drawdown duration.
         """
-        return ts.timeseries.index.max() - ts.timeseries.idxmax()
+        return self.ts.timeseries.index.max() - self.ts.timeseries.idxmax()
 
 
-    @staticmethod
     def maxdrawdown(
-        ts: TimeSeries,
+        self,
     ) -> DataFrame:
         """
         Returns maximum loss from last high water mark.
         """
         return (
-            ts.timeseries / ts.timeseries.cummax() - 1
+            self.ts.timeseries / self.ts.timeseries.cummax() - 1
         ).min()
 
 
-    @staticmethod
     def maxdrawdown_dur(
-        ts: TimeSeries,
+        self,
     ) -> DataFrame:
         """
         Returns maximum drawdown duration.
@@ -128,18 +125,17 @@ class TailMetrics:
             dd = x / x.cummax() - 1
             return dd.idxmin() - x[:dd.idxmin()].idxmax()
 
-        return ts.timeseries.apply(
+        return self.ts.timeseries.apply(
             maxdd_dur
         )
 
 
-    @staticmethod
     def pain_index(
-        ts: TimeSeries,
+        self,
     ) -> DataFrame:
         """
         Retursn average drawdown from last high water mark.
         """
         return (
-            1 - ts.timeseries / ts.timeseries.cummax()
+            1 - self.ts.timeseries / self.ts.timeseries.cummax()
         ).mean()
