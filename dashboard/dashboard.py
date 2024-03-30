@@ -20,6 +20,7 @@ class TradingDashboard:
         self.core_metrics = CoreMetrics(self.ts)
         self.tail_metrics = TailMetrics(self.ts)
 
+
     @property
     def metrics(self) -> DataFrame:
         """
