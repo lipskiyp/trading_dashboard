@@ -1,6 +1,10 @@
 # Pandas Trading Dashbaord
 
-Pandas practice project to calculates metrics for financial time-series.
+Pandas framework to calculate performance metrics for financial time-series.
+
+## Overview 
+
+The aim of the project was to design a Pandas framework to analyze financial time-series and calculate various performance metrics (such as Sharpe Ratio and Max Drawdown Duration).
 
 ## Example Output
 
